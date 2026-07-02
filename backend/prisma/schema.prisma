@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum SportType {
+  FUTSAL
+  SOCIETY
+  VOLEI
+  BASQUETE
+  TENIS
+  BEACH_TENNIS
+  PETECA
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(USER)
+  isActive     Boolean   @default(true)
+  bookings     Booking[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Court {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  sportType    SportType
+  location     String?
+  openingMinutes Int
+  closingMinutes Int
+  isActive     Boolean       @default(true)
+  bookings     Booking[]
+  blockedTimes BlockedTime[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("courts")
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  userId    String
+  courtId   String
+  startsAt  DateTime
+  endsAt    DateTime
+  status    BookingStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  court Court @relation(fields: [courtId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startsAt])
+  @@index([courtId, startsAt, endsAt])
+  @@index([courtId, status, startsAt])
+  @@map("bookings")
+}
+
+model BlockedTime {
+  id        String   @id @default(cuid())
+  courtId   String
+  startsAt  DateTime
+  endsAt    DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  court Court @relation(fields: [courtId], references: [id], onDelete: Cascade)
+
+  @@index([courtId, startsAt, endsAt])
+  @@map("blocked_times")
+}

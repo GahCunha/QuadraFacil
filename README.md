@@ -1,4 +1,4 @@
-# Quadra Fácil V2
+# Quadra Facil V2
 
 Sistema profissional para gerenciamento de reservas de quadras esportivas.
 
@@ -7,10 +7,10 @@ Sistema profissional para gerenciamento de reservas de quadras esportivas.
 ```text
 QuadraFacil/
 ├── .agents/
-│   └── agents/
 ├── docs/
 ├── backend/
 ├── frontend/
+├── docker-compose.yml
 ├── README.md
 └── .gitignore
 ```
@@ -34,20 +34,87 @@ QuadraFacil/
 - Tailwind CSS
 - shadcn/ui
 
-## Documentação
+## Desenvolvimento local
+
+### Banco de dados com Docker
+
+Suba o MySQL:
+
+```powershell
+docker compose up -d mysql
+```
+
+Verifique o status:
+
+```powershell
+docker compose ps
+```
+
+Veja os logs do banco:
+
+```powershell
+docker compose logs mysql
+```
+
+Pare os containers:
+
+```powershell
+docker compose down
+```
+
+### Backend
+
+Copie as variaveis de ambiente:
+
+```powershell
+cd backend
+Copy-Item .env.example .env
+```
+
+Instale dependencias:
+
+```powershell
+npm install
+```
+
+Valide o schema do Prisma:
+
+```powershell
+npm run prisma:validate
+```
+
+Gere o Prisma Client:
+
+```powershell
+npm run prisma:generate
+```
+
+Rode o backend:
+
+```powershell
+npm run dev
+```
+
+Endpoint de saude:
+
+```text
+GET http://localhost:3333/health
+```
+
+## Documentacao
 
 - `docs/AI_CONTEXT.md`: contexto geral para agentes e desenvolvimento.
 - `docs/ROADMAP.md`: fases planejadas.
 - `docs/DATABASE.md`: modelagem de dados.
 - `docs/API.md`: contratos de API.
-- `docs/DECISIONS.md`: decisões técnicas.
+- `docs/DECISIONS.md`: decisoes tecnicas.
 
 ## Regras principais
 
-- Usuários comuns fazem reservas.
+- Usuarios comuns fazem reservas.
 - Administradores gerenciam quadras.
-- Reservas não podem ocorrer no passado.
-- Não pode haver conflito entre reservas.
-- Reservas devem respeitar horário de funcionamento.
-- Cada usuário pode ter no máximo três reservas por semana.
+- Reservas nao podem ocorrer no passado.
+- Nao pode haver conflito entre reservas.
+- Reservas devem respeitar horario de funcionamento.
+- Cada usuario pode ter no maximo tres reservas por semana.
 - Status de reserva: `PENDING`, `APPROVED`, `REJECTED`, `CANCELLED`.
