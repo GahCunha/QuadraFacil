@@ -29,10 +29,12 @@ QuadraFacil/
 
 ### Frontend
 
-- Next.js
+- React
+- Vite
 - TypeScript
 - Tailwind CSS
 - shadcn/ui
+- lucide-react
 
 ## Desenvolvimento local
 
@@ -89,6 +91,18 @@ Gere o Prisma Client:
 npm run prisma:generate
 ```
 
+Rode o seed inicial:
+
+```powershell
+npm run prisma:seed
+```
+
+Abra o Prisma Studio:
+
+```powershell
+npm run db:studio
+```
+
 Rode o backend:
 
 ```powershell
@@ -101,6 +115,39 @@ Endpoint de saude:
 GET http://localhost:3333/health
 ```
 
+### Frontend
+
+Instale dependencias:
+
+```powershell
+cd frontend
+npm install
+```
+
+Copie as variaveis de ambiente:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Rode o frontend:
+
+```powershell
+npm run dev
+```
+
+Aplicacao:
+
+```text
+http://localhost:5173
+```
+
+Em desenvolvimento, o frontend usa proxy do Vite:
+
+```text
+/api -> http://localhost:3333
+```
+
 ## Documentacao
 
 - `docs/AI_CONTEXT.md`: contexto geral para agentes e desenvolvimento.
@@ -108,6 +155,7 @@ GET http://localhost:3333/health
 - `docs/DATABASE.md`: modelagem de dados.
 - `docs/API.md`: contratos de API.
 - `docs/DECISIONS.md`: decisoes tecnicas.
+- `docs/FRONTEND.md`: stack e instrucoes do frontend.
 
 ## Regras principais
 
@@ -118,3 +166,11 @@ GET http://localhost:3333/health
 - Reservas devem respeitar horario de funcionamento.
 - Cada usuario pode ter no maximo tres reservas por semana.
 - Status de reserva: `PENDING`, `APPROVED`, `REJECTED`, `CANCELLED`.
+
+## Seed inicial
+
+O seed cria dados basicos para desenvolvimento local:
+
+- admin: `admin@quadrafacil.com`
+- senha: `admin123`
+- quadras iniciais para futsal, society e beach tennis
