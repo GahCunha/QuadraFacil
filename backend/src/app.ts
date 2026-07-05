@@ -4,6 +4,7 @@ import { swaggerRoutes } from "./docs/swagger";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import { authRoutes } from "./modules/auth/routes/auth.routes";
 import { bookingRoutes } from "./modules/bookings/routes/booking.routes";
+import { blockedTimeRoutes } from "./modules/blocked-times/routes/blocked-time.routes";
 import { courtRoutes } from "./modules/courts/routes/court.routes";
 import { healthRoutes } from "./routes/health.routes";
 
@@ -16,5 +17,6 @@ app.use("/health", healthRoutes);
 app.use("/auth", authRoutes);
 app.use("/courts", courtRoutes);
 app.use("/bookings", bookingRoutes);
+app.use("/blocked-times", blockedTimeRoutes);
 
 app.use(errorMiddleware);

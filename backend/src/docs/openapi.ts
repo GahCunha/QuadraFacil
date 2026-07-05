@@ -24,6 +24,9 @@ export const openApiDocument = {
     {
       name: "Bookings",
     },
+    {
+      name: "BlockedTimes",
+    },
   ],
   components: {
     securitySchemes: {
@@ -255,6 +258,61 @@ export const openApiDocument = {
             type: "string",
             enum: ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
             example: "APPROVED",
+          },
+        },
+      },
+      BlockedTime: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+          },
+          courtId: {
+            type: "string",
+          },
+          startsAt: {
+            type: "string",
+            format: "date-time",
+          },
+          endsAt: {
+            type: "string",
+            format: "date-time",
+          },
+          reason: {
+            type: "string",
+            nullable: true,
+          },
+          createdAt: {
+            type: "string",
+            format: "date-time",
+          },
+          updatedAt: {
+            type: "string",
+            format: "date-time",
+          },
+        },
+      },
+      BlockedTimeInput: {
+        type: "object",
+        required: ["courtId", "startsAt", "endsAt"],
+        properties: {
+          courtId: {
+            type: "string",
+          },
+          startsAt: {
+            type: "string",
+            format: "date-time",
+            example: "2026-07-06T11:00:00.000Z",
+          },
+          endsAt: {
+            type: "string",
+            format: "date-time",
+            example: "2026-07-06T12:00:00.000Z",
+          },
+          reason: {
+            type: "string",
+            nullable: true,
+            example: "Manutencao",
           },
         },
       },
@@ -697,6 +755,119 @@ export const openApiDocument = {
           },
           "404": {
             description: "Reserva nao encontrada",
+          },
+        },
+      },
+    },
+    "/blocked-times": {
+      get: {
+        tags: ["BlockedTimes"],
+        summary: "Lista bloqueios de horario",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Lista de bloqueios",
+          },
+          "403": {
+            description: "Acesso restrito a administradores",
+          },
+        },
+      },
+      post: {
+        tags: ["BlockedTimes"],
+        summary: "Cria um bloqueio de horario",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/BlockedTimeInput",
+              },
+            },
+          },
+        },
+        responses: {
+          "201": {
+            description: "Bloqueio criado",
+          },
+          "400": {
+            description: "Dados invalidos ou fora do horario da quadra",
+          },
+          "403": {
+            description: "Acesso restrito a administradores",
+          },
+          "409": {
+            description: "Conflito com reserva ou bloqueio existente",
+          },
+        },
+      },
+    },
+    "/blocked-times/court/{courtId}": {
+      get: {
+        tags: ["BlockedTimes"],
+        summary: "Lista bloqueios de uma quadra",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "courtId",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Lista de bloqueios da quadra",
+          },
+          "403": {
+            description: "Acesso restrito a administradores",
+          },
+        },
+      },
+    },
+    "/blocked-times/{id}": {
+      delete: {
+        tags: ["BlockedTimes"],
+        summary: "Remove um bloqueio de horario",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Bloqueio removido",
+          },
+          "403": {
+            description: "Acesso restrito a administradores",
+          },
+          "404": {
+            description: "Bloqueio nao encontrado",
           },
         },
       },
