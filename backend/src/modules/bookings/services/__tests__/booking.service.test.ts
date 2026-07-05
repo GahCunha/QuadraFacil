@@ -275,6 +275,18 @@ describe("booking.service", () => {
       where: {
         userId: "user-id",
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            isActive: true,
+          },
+        },
+        court: true,
+      },
       orderBy: {
         startsAt: "desc",
       },
@@ -286,6 +298,23 @@ describe("booking.service", () => {
     prismaMock.booking.findMany.mockResolvedValue(bookings);
 
     await expect(listAllBookings()).resolves.toEqual(bookings);
+    expect(prismaMock.booking.findMany).toHaveBeenCalledWith({
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            isActive: true,
+          },
+        },
+        court: true,
+      },
+      orderBy: {
+        startsAt: "desc",
+      },
+    });
   });
 
   it("updates booking status", async () => {
@@ -295,6 +324,8 @@ describe("booking.service", () => {
     });
 
     prismaMock.booking.findUnique.mockResolvedValue(booking);
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    prismaMock.blockedTime.findMany.mockResolvedValue([]);
     prismaMock.booking.update.mockResolvedValue(approvedBooking);
 
     await expect(
@@ -302,6 +333,46 @@ describe("booking.service", () => {
         status: BookingStatus.APPROVED,
       }),
     ).resolves.toEqual(approvedBooking);
+  });
+
+  it("rejects approving booking with another booking conflict", async () => {
+    prismaMock.booking.findUnique.mockResolvedValue(makeBooking());
+    prismaMock.booking.findMany.mockResolvedValue([
+      {
+        startsAt: new Date("2026-07-06T09:30:00.000Z"),
+        endsAt: new Date("2026-07-06T10:30:00.000Z"),
+      },
+    ]);
+    prismaMock.blockedTime.findMany.mockResolvedValue([]);
+
+    await expect(
+      updateBookingStatus("booking-id", {
+        status: BookingStatus.APPROVED,
+      }),
+    ).rejects.toMatchObject({
+      message: "booking conflicts with another booking",
+      statusCode: 409,
+    });
+  });
+
+  it("rejects approving booking with blocked time conflict", async () => {
+    prismaMock.booking.findUnique.mockResolvedValue(makeBooking());
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    prismaMock.blockedTime.findMany.mockResolvedValue([
+      {
+        startsAt: new Date("2026-07-06T09:30:00.000Z"),
+        endsAt: new Date("2026-07-06T10:30:00.000Z"),
+      },
+    ]);
+
+    await expect(
+      updateBookingStatus("booking-id", {
+        status: BookingStatus.APPROVED,
+      }),
+    ).rejects.toMatchObject({
+      message: "booking conflicts with a blocked time",
+      statusCode: 409,
+    });
   });
 
   it("rejects changing final booking status", async () => {
@@ -330,7 +401,9 @@ describe("booking.service", () => {
     prismaMock.booking.findUnique.mockResolvedValue(booking);
     prismaMock.booking.update.mockResolvedValue(cancelledBooking);
 
-    await expect(cancelBooking("booking-id", "user-id")).resolves.toEqual(cancelledBooking);
+    await expect(
+      cancelBooking("booking-id", "user-id", new Date("2026-07-05T09:00:00.000Z")),
+    ).resolves.toEqual(cancelledBooking);
   });
 
   it("does not cancel bookings from another user", async () => {
@@ -343,6 +416,21 @@ describe("booking.service", () => {
     await expect(cancelBooking("booking-id", "user-id")).rejects.toMatchObject({
       message: "booking not found",
       statusCode: 404,
+    });
+  });
+
+  it("does not cancel past bookings", async () => {
+    prismaMock.booking.findUnique.mockResolvedValue(
+      makeBooking({
+        startsAt: new Date("2026-07-04T09:00:00.000Z"),
+      }),
+    );
+
+    await expect(
+      cancelBooking("booking-id", "user-id", new Date("2026-07-05T09:00:00.000Z")),
+    ).rejects.toMatchObject({
+      message: "past bookings cannot be cancelled",
+      statusCode: 409,
     });
   });
 });
