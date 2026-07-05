@@ -9,6 +9,7 @@ import {
   updateCourt,
 } from "./services/court.service";
 import { AppError } from "../../shared/errors/AppError";
+import { getCourtAvailability } from "./services/availability.service";
 
 function getRouteParamId(request: Request): string {
   const { id } = request.params;
@@ -48,6 +49,15 @@ export async function getCourtByIdController(
   return response.status(200).json({
     court,
   });
+}
+
+export async function getCourtAvailabilityController(
+  request: Request,
+  response: Response,
+): Promise<Response> {
+  const availability = await getCourtAvailability(getRouteParamId(request), request.query);
+
+  return response.status(200).json(availability);
 }
 
 export async function createCourtController(

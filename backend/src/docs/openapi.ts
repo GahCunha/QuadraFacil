@@ -188,6 +188,67 @@ export const openApiDocument = {
           },
         },
       },
+      AvailabilitySlot: {
+        type: "object",
+        properties: {
+          startsAt: {
+            type: "string",
+            format: "date-time",
+          },
+          endsAt: {
+            type: "string",
+            format: "date-time",
+          },
+          available: {
+            type: "boolean",
+          },
+          reason: {
+            type: "string",
+            enum: ["PAST", "BOOKING", "BLOCKED_TIME"],
+          },
+        },
+      },
+      DailyAvailability: {
+        type: "object",
+        properties: {
+          date: {
+            type: "string",
+            example: "2026-07-10",
+          },
+          slots: {
+            type: "array",
+            items: {
+              $ref: "#/components/schemas/AvailabilitySlot",
+            },
+          },
+        },
+      },
+      AvailabilityResponse: {
+        type: "object",
+        properties: {
+          courtId: {
+            type: "string",
+          },
+          openingMinutes: {
+            type: "integer",
+            example: 480,
+          },
+          closingMinutes: {
+            type: "integer",
+            example: 1320,
+          },
+          slotMinutes: {
+            type: "integer",
+            example: 60,
+          },
+          days: {
+            type: "array",
+            items: {
+              $ref: "#/components/schemas/DailyAvailability",
+            },
+          },
+        },
+      },
       Booking: {
         type: "object",
         properties: {
@@ -616,6 +677,70 @@ export const openApiDocument = {
           },
           "403": {
             description: "Acesso restrito a administradores",
+          },
+          "404": {
+            description: "Quadra nao encontrada",
+          },
+        },
+      },
+    },
+    "/courts/{id}/availability": {
+      get: {
+        tags: ["Courts"],
+        summary: "Consulta disponibilidade de horarios de uma quadra",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+          {
+            name: "date",
+            in: "query",
+            required: false,
+            description: "Data especifica em formato YYYY-MM-DD. Use date ou month, nao ambos.",
+            schema: {
+              type: "string",
+              example: "2026-07-10",
+            },
+          },
+          {
+            name: "month",
+            in: "query",
+            required: false,
+            description: "Mes em formato YYYY-MM. Quando informado, retorna todos os dias do mes.",
+            schema: {
+              type: "string",
+              example: "2026-07",
+            },
+          },
+          {
+            name: "slotMinutes",
+            in: "query",
+            required: false,
+            description: "Tamanho dos horarios em minutos.",
+            schema: {
+              type: "integer",
+              example: 60,
+            },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Disponibilidade calculada",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/AvailabilityResponse",
+                },
+              },
+            },
+          },
+          "400": {
+            description: "Parametros invalidos",
           },
           "404": {
             description: "Quadra nao encontrada",
