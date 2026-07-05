@@ -21,6 +21,9 @@ export const openApiDocument = {
     {
       name: "Courts",
     },
+    {
+      name: "Bookings",
+    },
   ],
   components: {
     securitySchemes: {
@@ -179,6 +182,79 @@ export const openApiDocument = {
           },
           isActive: {
             type: "boolean",
+          },
+        },
+      },
+      Booking: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+          },
+          userId: {
+            type: "string",
+          },
+          courtId: {
+            type: "string",
+          },
+          startsAt: {
+            type: "string",
+            format: "date-time",
+          },
+          endsAt: {
+            type: "string",
+            format: "date-time",
+          },
+          status: {
+            type: "string",
+            enum: ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
+          },
+          notes: {
+            type: "string",
+            nullable: true,
+          },
+          createdAt: {
+            type: "string",
+            format: "date-time",
+          },
+          updatedAt: {
+            type: "string",
+            format: "date-time",
+          },
+        },
+      },
+      BookingInput: {
+        type: "object",
+        required: ["courtId", "startsAt", "endsAt"],
+        properties: {
+          courtId: {
+            type: "string",
+          },
+          startsAt: {
+            type: "string",
+            format: "date-time",
+            example: "2026-07-06T09:00:00.000Z",
+          },
+          endsAt: {
+            type: "string",
+            format: "date-time",
+            example: "2026-07-06T10:00:00.000Z",
+          },
+          notes: {
+            type: "string",
+            nullable: true,
+            example: "Treino",
+          },
+        },
+      },
+      BookingStatusInput: {
+        type: "object",
+        required: ["status"],
+        properties: {
+          status: {
+            type: "string",
+            enum: ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
+            example: "APPROVED",
           },
         },
       },
@@ -485,6 +561,142 @@ export const openApiDocument = {
           },
           "404": {
             description: "Quadra nao encontrada",
+          },
+        },
+      },
+    },
+    "/bookings": {
+      get: {
+        tags: ["Bookings"],
+        summary: "Lista todas as reservas para administradores",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Lista de reservas",
+          },
+          "403": {
+            description: "Acesso restrito a administradores",
+          },
+        },
+      },
+      post: {
+        tags: ["Bookings"],
+        summary: "Cria uma reserva",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/BookingInput",
+              },
+            },
+          },
+        },
+        responses: {
+          "201": {
+            description: "Reserva criada com status PENDING",
+          },
+          "400": {
+            description: "Dados invalidos ou reserva fora do horario de funcionamento",
+          },
+          "409": {
+            description: "Conflito de horario ou limite semanal atingido",
+          },
+        },
+      },
+    },
+    "/bookings/me": {
+      get: {
+        tags: ["Bookings"],
+        summary: "Lista minhas reservas",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Lista de reservas do usuario autenticado",
+          },
+        },
+      },
+    },
+    "/bookings/{id}/status": {
+      patch: {
+        tags: ["Bookings"],
+        summary: "Atualiza o status de uma reserva",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/BookingStatusInput",
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Status atualizado",
+          },
+          "403": {
+            description: "Acesso restrito a administradores",
+          },
+          "404": {
+            description: "Reserva nao encontrada",
+          },
+        },
+      },
+    },
+    "/bookings/{id}/cancel": {
+      patch: {
+        tags: ["Bookings"],
+        summary: "Cancela uma reserva do usuario autenticado",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Reserva cancelada",
+          },
+          "404": {
+            description: "Reserva nao encontrada",
           },
         },
       },
